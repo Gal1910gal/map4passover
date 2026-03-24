@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ReportData } from "@/lib/payload";
 import ReportTemplate from "@/components/ReportTemplate";
 import InsightCard from "@/components/InsightCard";
+import InfographicTemplate from "@/components/InfographicTemplate";
 import { CardContent } from "@/app/api/card/route";
 
 export default function PreviewPage() {
@@ -22,9 +23,8 @@ export default function PreviewPage() {
 
   // Infographic state
   const [showInfographic, setShowInfographic] = useState(false);
-  const [infographicData, setInfographicData] = useState<string | null>(null);
-  const [infographicLoading, setInfographicLoading] = useState(false);
-  const [infographicError, setInfographicError] = useState("");
+  const [infographicDownloading, setInfographicDownloading] = useState(false);
+  const infographicRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const raw = sessionStorage.getItem("passover_report");
@@ -86,33 +86,24 @@ export default function PreviewPage() {
     window.print();
   }
 
-  async function generateInfographic() {
-    setShowInfographic(true);
-    if (infographicData) return;
-    setInfographicLoading(true);
-    setInfographicError("");
+  async function downloadInfographic() {
+    if (!infographicRef.current || !report) return;
+    setInfographicDownloading(true);
     try {
-      const res = await fetch("/api/infographic", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(report),
+      const html2canvas = (await import("html2canvas")).default;
+      const canvas = await html2canvas(infographicRef.current, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: null,
       });
-      const data = await res.json();
-      if (!res.ok || data.error) throw new Error(data.error || "שגיאה");
-      setInfographicData(data.image as string);
-    } catch (err) {
-      setInfographicError(err instanceof Error ? err.message : "שגיאה ביצירת האינפוגרפיקה");
+      const link = document.createElement("a");
+      link.download = `אינפוגרפיקה-${report.firstName}-${report.lastName}.png`;
+      link.href = canvas.toDataURL("image/png");
+      link.click();
     } finally {
-      setInfographicLoading(false);
+      setInfographicDownloading(false);
     }
-  }
-
-  function downloadInfographic() {
-    if (!infographicData) return;
-    const link = document.createElement("a");
-    link.href = `data:image/png;base64,${infographicData}`;
-    link.download = `אינפוגרפיקה-${report!.firstName}-${report!.lastName}.png`;
-    link.click();
   }
 
   function sendWhatsApp(r: ReportData) {
@@ -154,7 +145,7 @@ export default function PreviewPage() {
               🃏 קלף תובנות
             </button>
             <button
-              onClick={generateInfographic}
+              onClick={() => setShowInfographic(true)}
               className="px-4 py-2 bg-[#7a5228] hover:bg-[#6a4420] text-white rounded-xl text-xs font-bold transition-all">
               🦋 אינפוגרפיקה
             </button>
@@ -273,24 +264,16 @@ export default function PreviewPage() {
       {/* Infographic Modal */}
       {showInfographic && (
         <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4 no-print">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[92vh] overflow-y-auto">
             <div className="flex items-center justify-between px-5 py-4 border-b border-[#d4b896]/40">
               <p className="font-bold text-[#4a3728]">🦋 אינפוגרפיקה אישית</p>
               <div className="flex gap-2">
-                {infographicData && (
-                  <>
-                    <button
-                      onClick={downloadInfographic}
-                      className="px-4 py-2 bg-[#8B6348] hover:bg-[#7a5540] text-white rounded-xl text-xs font-bold transition-all">
-                      ⬇️ הורד PNG
-                    </button>
-                    <button
-                      onClick={() => { setInfographicData(null); generateInfographic(); }}
-                      className="px-4 py-2 bg-[#4a3728] hover:bg-[#3a2a1e] text-white rounded-xl text-xs font-bold transition-all">
-                      🔄 צור מחדש
-                    </button>
-                  </>
-                )}
+                <button
+                  onClick={downloadInfographic}
+                  disabled={infographicDownloading}
+                  className="px-4 py-2 bg-[#8B6348] hover:bg-[#7a5540] disabled:opacity-60 text-white rounded-xl text-xs font-bold transition-all">
+                  {infographicDownloading ? "שומר..." : "⬇️ הורד PNG"}
+                </button>
                 <button
                   onClick={() => setShowInfographic(false)}
                   className="px-4 py-2 bg-white border border-[#d4b896]/50 text-[#4a3728] rounded-xl text-xs font-bold transition-all">
@@ -298,31 +281,8 @@ export default function PreviewPage() {
                 </button>
               </div>
             </div>
-
-            <div className="p-5">
-              {infographicLoading && (
-                <div className="flex flex-col items-center gap-4 py-16">
-                  <div className="w-12 h-12 border-4 border-[#8B6348]/30 border-t-[#8B6348] rounded-full animate-spin" />
-                  <p className="text-[#8B6348] text-sm font-medium">מייצר אינפוגרפיקה... זה לוקח כ-30 שניות</p>
-                </div>
-              )}
-              {infographicError && (
-                <div className="text-center py-10">
-                  <p className="text-red-600 text-sm mb-4">{infographicError}</p>
-                  <button
-                    onClick={() => { setInfographicData(null); generateInfographic(); }}
-                    className="px-4 py-2 bg-[#8B6348] text-white rounded-xl text-xs font-bold">
-                    נסה שוב
-                  </button>
-                </div>
-              )}
-              {infographicData && (
-                <img
-                  src={`data:image/png;base64,${infographicData}`}
-                  alt="אינפוגרפיקה אישית"
-                  className="w-full rounded-xl shadow-md"
-                />
-              )}
+            <div className="p-4 overflow-x-auto">
+              <InfographicTemplate ref={infographicRef} report={report} />
             </div>
           </div>
         </div>
