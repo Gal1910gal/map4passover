@@ -14,7 +14,7 @@ function Page({ children, className = "", tight = false }: {
   className?: string;
   tight?: boolean;
 }) {
-  const py = tight ? "py-3 print:py-3" : "py-5 print:py-5";
+  const py = tight ? "py-4 print:py-4" : "py-5 print:py-5";
   return (
     <div className={`print-page bg-[#f5f0ea] w-full max-w-3xl mx-auto px-4 sm:px-8 print:px-6 ${py} ${className}`}>
       {children}
@@ -112,7 +112,7 @@ function MonthPage({ month, idx, gender }: { month: ReportData["months"][0]; idx
     <Page className="page-break" tight>
 
       {/* ── Month header ── */}
-      <div className={`rounded-xl border-2 p-2.5 mb-2 shadow-sm print:shadow-none ${c.bg}`}>
+      <div className={`rounded-xl border-2 p-3 mb-4 shadow-sm print:shadow-none ${c.bg}`}>
         <div className="flex items-center gap-3">
           <div className={`${c.dot} text-white rounded-full w-10 h-10 flex items-center justify-center font-bold text-lg flex-shrink-0 shadow-md print:shadow-none`}>
             {month.personalMonth}
@@ -137,18 +137,18 @@ function MonthPage({ month, idx, gender }: { month: ReportData["months"][0]; idx
       </div>
 
       {/* ── Energy + Challenge side by side ── */}
-      <div className="grid grid-cols-2 gap-2 mb-2">
+      <div className="grid grid-cols-2 gap-3 mb-4">
         {/* Energy */}
-        <div className="bg-[#e8ddd2] rounded-xl p-2.5 border border-[#c9a98a]/50 shadow-sm print:shadow-none">
+        <div className="bg-[#e8ddd2] rounded-xl p-3 border border-[#c9a98a]/50 shadow-sm print:shadow-none">
           <SectionTag label="אנרגיה מרכזית" />
-          <p className="text-[#4a3728] text-xs leading-relaxed">{month.energyDescription}</p>
+          <p className="text-[#4a3728] text-xs leading-relaxed mt-1">{month.energyDescription}</p>
         </div>
 
         {/* Challenge */}
-        <div className="flex flex-col gap-2">
-          <div className="bg-[#fff8e7] rounded-xl p-2.5 border-2 border-amber-300/60 shadow-sm print:shadow-none flex-1">
-            <p className="text-amber-700 text-xs font-bold mb-1">לשים לב ל:</p>
-            <ul className="space-y-0.5">
+        <div className="flex flex-col gap-3">
+          <div className="bg-[#fff8e7] rounded-xl p-3 border-2 border-amber-300/60 shadow-sm print:shadow-none flex-1">
+            <p className="text-amber-700 text-xs font-bold mb-1.5">לשים לב ל:</p>
+            <ul className="space-y-1">
               {month.challengeItems.map((item, i) => (
                 <li key={i} className="text-[#4a3728] text-xs flex items-start gap-1">
                   <span className="text-amber-500 font-bold flex-shrink-0">•</span>
@@ -157,9 +157,9 @@ function MonthPage({ month, idx, gender }: { month: ReportData["months"][0]; idx
               ))}
             </ul>
           </div>
-          <div className="bg-white/80 rounded-xl p-2.5 border-2 border-[#d4b896]/50 shadow-sm print:shadow-none flex-1">
-            <p className="text-[#7c5c47] text-xs font-bold mb-1">איך להתמודד:</p>
-            <ul className="space-y-0.5">
+          <div className="bg-white/80 rounded-xl p-3 border-2 border-[#d4b896]/50 shadow-sm print:shadow-none flex-1">
+            <p className="text-[#7c5c47] text-xs font-bold mb-1.5">איך להתמודד:</p>
+            <ul className="space-y-1">
               {challengeHow.map((line, i) => (
                 <li key={i} className="text-[#4a3728] text-xs font-medium">• {line}</li>
               ))}
@@ -169,12 +169,12 @@ function MonthPage({ month, idx, gender }: { month: ReportData["months"][0]; idx
       </div>
 
       {/* ── What to do ── */}
-      <div className="mb-2">
+      <div className="mb-4">
         <SectionTag label="מה כן לעשות" />
-        <div className="grid grid-cols-3 gap-2 mt-1">
+        <div className="grid grid-cols-3 gap-3 mt-2">
           {[0, 2, 4].map(i => (
-            <div key={i} className="bg-white/80 rounded-lg p-2 border-2 border-[#d4b896]/50 shadow-sm print:shadow-none">
-              <p className="text-[#4a3728] text-xs mb-1 flex items-start gap-1">
+            <div key={i} className="bg-white/80 rounded-lg p-3 border-2 border-[#d4b896]/50 shadow-sm print:shadow-none">
+              <p className="text-[#4a3728] text-xs mb-1.5 flex items-start gap-1">
                 <span className={`${c.accent} font-bold flex-shrink-0`}>←</span>
                 <span className="font-medium">{month.whatToDo[i]}</span>
               </p>
@@ -190,11 +190,11 @@ function MonthPage({ month, idx, gender }: { month: ReportData["months"][0]; idx
       {/* ── Precise action ── */}
       <div>
         <SectionTag label="פעולה מדויקת" />
-        <div className="bg-[#e8ddd2] rounded-xl p-2.5 mb-1.5 border border-[#c9a98a]/50 shadow-sm print:shadow-none mt-1">
+        <div className="bg-[#e8ddd2] rounded-xl p-3 mb-2.5 border border-[#c9a98a]/50 shadow-sm print:shadow-none mt-2">
           <p className="text-[#8B6348] text-xs font-bold mb-0.5">🎯 הפעולה שלי לחודש:</p>
           <p className="text-[#4a3728] font-bold text-sm">{month.preciseAction}</p>
         </div>
-        <div className="grid grid-cols-3 gap-2 mb-1.5">
+        <div className="grid grid-cols-3 gap-3 mb-2.5">
           {[
             { label: "מתי?", val: month.when },
             { label: "איך?", val: month.how },
