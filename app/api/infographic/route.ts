@@ -7,23 +7,23 @@ export async function POST(req: NextRequest) {
     const report = await req.json() as ReportData;
 
     const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
-
     const prompt = buildPrompt(report);
 
-    const response = await ai.models.generateImages({
-      model: "imagen-3.0-generate-002",
-      prompt,
+    const response = await ai.models.generateContent({
+      model: "gemini-2.0-flash-preview-image-generation",
+      contents: [{ role: "user", parts: [{ text: prompt }] }],
       config: {
-        numberOfImages: 1,
-        aspectRatio: "16:9",
-        outputMimeType: "image/png",
+        responseModalities: ["IMAGE"],
       },
     });
 
-    const imageBytes = response.generatedImages?.[0]?.image?.imageBytes;
-    if (!imageBytes) throw new Error("לא נוצרה תמונה");
+    const parts = response.candidates?.[0]?.content?.parts ?? [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const imagePart = parts.find((p: any) => p.inlineData);
 
-    return NextResponse.json({ image: imageBytes });
+    if (!imagePart?.inlineData?.data) throw new Error("לא נוצרה תמונה");
+
+    return NextResponse.json({ image: imagePart.inlineData.data });
   } catch (err) {
     console.error("Infographic error:", err);
     return NextResponse.json(
@@ -38,18 +38,15 @@ function buildPrompt(report: ReportData): string {
   const m1 = report.months[0];
   const m2 = report.months[1];
   const m3 = report.months[2];
-
   const shortDesc = report.yearDescription.split(".")[0];
-  const month2name = m2?.monthName ?? "";
-  const month3name = m3?.monthName ?? "";
 
   return `Create a beautiful spiritual Hebrew infographic poster in landscape format (16:9 ratio).
 
 VISUAL STYLE:
 - Warm cream/parchment background in beige and sand tones
-- Large central decorative butterfly in warm mahogany and brown tones
+- Large central decorative butterfly in warm mahogany and brown tones with decorative swirling patterns inside wings
 - Each butterfly wing contains small illustrated vignettes (a flowing river, a dancing woman, a sprouting plant, a glowing star and open door)
-- Ornate gold and dark brown color palette
+- Gold and dark brown color palette
 - Decorative white owl perched on a branch with roots on the left side
 - Elegant swirling botanical flourishes around the butterfly
 - Mystical, warm, spiritual aesthetic
@@ -65,21 +62,21 @@ Curved text label arching over left wing:
 Curved text label arching over right wing:
 "דגשים ופעולה לשלושת החודשים הקרובים"
 
-LEFT SIDE callout boxes (outside left wing):
+LEFT SIDE callout boxes:
 Box 1 title: "הזדמנויות מהגורל"
 Box 1 text: "${shortDesc}"
 
 Box 2 title: "זרימה ללא מאמץ"
 Box 2 text: "${m1.challenge}"
 
-RIGHT SIDE callout boxes (outside right wing):
+RIGHT SIDE callout boxes:
 Box 3 title: "האתגר: ${m2?.centralEnergy ?? ""}"
 Box 3 text: "${m2?.challenge ?? ""}"
 
 Box 4 title: "לפעול בתוך הקיים"
-Box 4 text: "${m3?.centralEnergy ?? ""} – ${month2name} ו${month3name}"
+Box 4 text: "${m3?.centralEnergy ?? ""}"
 
-Bottom center small text: "${name}"
+Bottom center: "${name}"
 
-IMPORTANT: All Hebrew characters must be legible, correctly formed, and rendered right-to-left. Use a clean serif or decorative Hebrew font style. The infographic should feel personal, warm, and spiritually uplifting.`;
+IMPORTANT: All Hebrew text must be legible, correctly formed, and right-to-left. The infographic should feel personal, warm, and spiritually uplifting.`;
 }
