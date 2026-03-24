@@ -1,0 +1,35 @@
+@import "tailwindcss";
+
+@media print {
+  .no-print { display: none !important; }
+
+  /* A4 page with tight margins */
+  @page { size: A4 portrait; margin: 10mm 12mm; }
+
+  body {
+    background: white !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Remove min-h-screen in print so cover doesn't force empty space */
+  .print-page {
+    min-height: 0 !important;
+  }
+
+  /* Explicit page break BEFORE a section */
+  .page-break { break-before: page !important; }
+
+  /* Keep short blocks together */
+  .keep-together { break-inside: avoid; }
+
+  /* Hide report when printing the insight card */
+  .print-hidden { display: none !important; }
+
+  /* Insight card print page — center on A4 */
+  #insight-card {
+    margin: 0 auto;
+    box-shadow: none !important;
+    border: 2px solid #8B6348 !important;
+  }
+}
