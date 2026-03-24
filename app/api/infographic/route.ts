@@ -1,4 +1,4 @@
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextRequest, NextResponse } from "next/server";
 import { ReportData } from "@/lib/payload";
 
@@ -6,18 +6,22 @@ export async function POST(req: NextRequest) {
   try {
     const report = await req.json() as ReportData;
 
-    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
+    const model = genAI.getGenerativeModel({
+      model: "gemini-2.0-flash-exp",
+    });
+
     const prompt = buildPrompt(report);
 
-    const response = await ai.models.generateContent({
-      model: "gemini-2.0-flash-preview-image-generation",
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const result = await (model as any).generateContent({
       contents: [{ role: "user", parts: [{ text: prompt }] }],
-      config: {
-        responseModalities: ["IMAGE"],
+      generationConfig: {
+        responseModalities: ["IMAGE", "TEXT"],
       },
     });
 
-    const parts = response.candidates?.[0]?.content?.parts ?? [];
+    const parts = result.response.candidates?.[0]?.content?.parts ?? [];
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const imagePart = parts.find((p: any) => p.inlineData);
 
@@ -57,7 +61,7 @@ Large bold title at top center:
 "שנה אישית ${report.personalYear}: ${report.yearTag}"
 
 Curved text label arching over left wing:
-"מהות השנה – ${m1.centralEnergy}"
+"מהות השנה - ${m1.centralEnergy}"
 
 Curved text label arching over right wing:
 "דגשים ופעולה לשלושת החודשים הקרובים"
