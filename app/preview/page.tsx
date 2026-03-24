@@ -20,6 +20,12 @@ export default function PreviewPage() {
   const [cardLoading, setCardLoading] = useState(false);
   const [cardError, setCardError] = useState("");
 
+  // Infographic state
+  const [showInfographic, setShowInfographic] = useState(false);
+  const [infographicData, setInfographicData] = useState<string | null>(null);
+  const [infographicLoading, setInfographicLoading] = useState(false);
+  const [infographicError, setInfographicError] = useState("");
+
   useEffect(() => {
     const raw = sessionStorage.getItem("passover_report");
     if (!raw) { router.push("/"); return; }
@@ -80,6 +86,35 @@ export default function PreviewPage() {
     window.print();
   }
 
+  async function generateInfographic() {
+    setShowInfographic(true);
+    if (infographicData) return;
+    setInfographicLoading(true);
+    setInfographicError("");
+    try {
+      const res = await fetch("/api/infographic", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(report),
+      });
+      const data = await res.json();
+      if (!res.ok || data.error) throw new Error(data.error || "שגיאה");
+      setInfographicData(data.image as string);
+    } catch (err) {
+      setInfographicError(err instanceof Error ? err.message : "שגיאה ביצירת האינפוגרפיקה");
+    } finally {
+      setInfographicLoading(false);
+    }
+  }
+
+  function downloadInfographic() {
+    if (!infographicData) return;
+    const link = document.createElement("a");
+    link.href = `data:image/png;base64,${infographicData}`;
+    link.download = `אינפוגרפיקה-${report!.firstName}-${report!.lastName}.png`;
+    link.click();
+  }
+
   function sendWhatsApp(r: ReportData) {
     const msg = [
       `שלום ${r.firstName}! ✨`,
@@ -117,6 +152,11 @@ export default function PreviewPage() {
               onClick={openCard}
               className="px-4 py-2 bg-[#4a3728] hover:bg-[#3a2a1e] text-white rounded-xl text-xs font-bold transition-all">
               🃏 קלף תובנות
+            </button>
+            <button
+              onClick={generateInfographic}
+              className="px-4 py-2 bg-[#7a5228] hover:bg-[#6a4420] text-white rounded-xl text-xs font-bold transition-all">
+              🦋 אינפוגרפיקה
             </button>
             <button
               onClick={() => sendWhatsApp(report)}
@@ -227,6 +267,64 @@ export default function PreviewPage() {
             card={cardContent}
             name={`${report.firstName} ${report.lastName}`}
           />
+        </div>
+      )}
+
+      {/* Infographic Modal */}
+      {showInfographic && (
+        <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4 no-print">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-[#d4b896]/40">
+              <p className="font-bold text-[#4a3728]">🦋 אינפוגרפיקה אישית</p>
+              <div className="flex gap-2">
+                {infographicData && (
+                  <>
+                    <button
+                      onClick={downloadInfographic}
+                      className="px-4 py-2 bg-[#8B6348] hover:bg-[#7a5540] text-white rounded-xl text-xs font-bold transition-all">
+                      ⬇️ הורד PNG
+                    </button>
+                    <button
+                      onClick={() => { setInfographicData(null); generateInfographic(); }}
+                      className="px-4 py-2 bg-[#4a3728] hover:bg-[#3a2a1e] text-white rounded-xl text-xs font-bold transition-all">
+                      🔄 צור מחדש
+                    </button>
+                  </>
+                )}
+                <button
+                  onClick={() => setShowInfographic(false)}
+                  className="px-4 py-2 bg-white border border-[#d4b896]/50 text-[#4a3728] rounded-xl text-xs font-bold transition-all">
+                  ✕ סגור
+                </button>
+              </div>
+            </div>
+
+            <div className="p-5">
+              {infographicLoading && (
+                <div className="flex flex-col items-center gap-4 py-16">
+                  <div className="w-12 h-12 border-4 border-[#8B6348]/30 border-t-[#8B6348] rounded-full animate-spin" />
+                  <p className="text-[#8B6348] text-sm font-medium">מייצר אינפוגרפיקה... זה לוקח כ-30 שניות</p>
+                </div>
+              )}
+              {infographicError && (
+                <div className="text-center py-10">
+                  <p className="text-red-600 text-sm mb-4">{infographicError}</p>
+                  <button
+                    onClick={() => { setInfographicData(null); generateInfographic(); }}
+                    className="px-4 py-2 bg-[#8B6348] text-white rounded-xl text-xs font-bold">
+                    נסה שוב
+                  </button>
+                </div>
+              )}
+              {infographicData && (
+                <img
+                  src={`data:image/png;base64,${infographicData}`}
+                  alt="אינפוגרפיקה אישית"
+                  className="w-full rounded-xl shadow-md"
+                />
+              )}
+            </div>
+          </div>
         </div>
       )}
     </div>
