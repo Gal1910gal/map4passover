@@ -1,4 +1,4 @@
-import { CONTENT, buildPersonalMessage, genderize } from "@/data/content";
+import { CONTENT, YEAR_MONTH_INTERACTION, buildPersonalMessage, genderize } from "@/data/content";
 import { MonthInfo } from "./numerology";
 
 export interface ReportData {
@@ -24,6 +24,7 @@ export interface ReportData {
     how: string;
     withWhom: string;
     feeling: string;
+    yearMonthInteraction: string;
   }>;
   personalMessage: string;
 }
@@ -60,6 +61,7 @@ export function buildReport(
       how: g(c.month.how),
       withWhom: g(c.month.withWhom),
       feeling: g(c.month.feeling),
+      yearMonthInteraction: g(YEAR_MONTH_INTERACTION[personalYear]?.[m.personalMonth] ?? ""),
     };
   });
 

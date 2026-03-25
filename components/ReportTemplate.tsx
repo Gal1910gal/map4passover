@@ -136,6 +136,14 @@ function MonthPage({ month, idx, gender }: { month: ReportData["months"][0]; idx
         </div>
       </div>
 
+      {/* ── Year × Month interaction ── */}
+      {month.yearMonthInteraction && (
+        <div className="bg-[#fdf6e3] border border-[#c9a98a]/70 rounded-xl px-3 py-2 mb-4 flex items-start gap-2 shadow-sm print:shadow-none">
+          <span className="text-[#8B6348] font-bold text-xs flex-shrink-0 mt-0.5">✦ השפעת השנה על החודש:</span>
+          <p className="text-[#4a3728] text-xs leading-relaxed">{month.yearMonthInteraction}</p>
+        </div>
+      )}
+
       {/* ── Energy + Challenge side by side ── */}
       <div className="grid grid-cols-2 gap-3 mb-4">
         {/* Energy */}
