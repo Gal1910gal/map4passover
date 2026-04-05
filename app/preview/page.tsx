@@ -58,6 +58,7 @@ export default function PreviewPage() {
     setCardLoading(true);
     setCardError("");
     try {
+      const transitionMonth = report!.months.find(m => m.isBirthdayMonth);
       const res = await fetch("/api/card", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -69,7 +70,10 @@ export default function PreviewPage() {
             number: m.personalMonth,
             name: m.monthName,
             centralEnergy: m.centralEnergy,
+            isTransition: m.isBirthdayMonth,
           })),
+          nextPersonalYear: report!.nextPersonalYear,
+          birthdayMonth: transitionMonth?.monthName,
         }),
       });
       const data = await res.json();

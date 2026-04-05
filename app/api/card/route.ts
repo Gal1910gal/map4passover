@@ -15,24 +15,30 @@ const SYSTEM_INSTRUCTION = `אתה נומרולוג מומחה ומאמן איש
 
 export async function POST(req: NextRequest) {
   try {
-    const { name, gender, personalYear, months } = await req.json() as {
+    const { name, gender, personalYear, months, nextPersonalYear, birthdayMonth } = await req.json() as {
       name: string;
       gender: "female" | "male";
       personalYear: number;
-      months: Array<{ number: number; name: string; centralEnergy: string }>;
+      months: Array<{ number: number; name: string; centralEnergy: string; isTransition?: boolean }>;
+      nextPersonalYear?: number;
+      birthdayMonth?: string;
     };
 
     const genderWord = gender === "female" ? "נקבה (את, שלך, עשי)" : "זכר (אתה, שלך, עשה)";
     const monthsText = months.map((m, i) =>
-      `חודש ${i + 1} — ${m.name}: אנרגיה ${m.number} (${m.centralEnergy})`
+      `חודש ${i + 1} — ${m.name}: אנרגיה ${m.number} (${m.centralEnergy})${m.isTransition ? " [חודש יומולדת — השנה מתחלפת באמצע החודש]" : ""}`
     ).join("\n");
+
+    const transitionNote = nextPersonalYear && birthdayMonth
+      ? `\nחשוב: בחודש ${birthdayMonth} חל יום הולדת — השנה האישית עוברת מ-${personalYear} ל-${nextPersonalYear}. יש לתת ביטוי לנקודת המפנה הזו בקלף.`
+      : "";
 
     const userPrompt = `
 שם: ${name}
 מגדר: ${genderWord}
-שנה אישית: ${personalYear}
+שנה אישית: ${personalYear}${nextPersonalYear ? ` (עד יום הולדת) → ${nextPersonalYear} (אחרי יום הולדת)` : ""}
 שלושת החודשים הקרובים:
-${monthsText}
+${monthsText}${transitionNote}
 
 צור קלף תובנות אישי. החזר JSON בדיוק בפורמט הבא (ללא markdown):
 {
