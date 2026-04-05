@@ -67,10 +67,22 @@ function CoverPage({ report }: { report: ReportData }) {
       </div>
 
       {/* What I see in you now */}
-      <div className="bg-white/80 rounded-2xl p-4 print:p-4 border-2 border-[#d4b896]/60 mb-4 shadow-sm print:shadow-none">
-        <p className="text-[#8B6348] text-sm font-bold mb-2">מה אני רואה אצלך עכשיו:</p>
+      <div className="bg-white/80 rounded-2xl p-4 print:p-4 border-2 border-[#d4b896]/60 mb-3 shadow-sm print:shadow-none">
+        <p className="text-[#8B6348] text-sm font-bold mb-2">
+          מה אני רואה אצלך עכשיו — שנה אישית {report.personalYear}:
+        </p>
         <p className="text-[#4a3728] leading-relaxed text-sm print:text-sm">{report.yearDescription}</p>
       </div>
+
+      {/* New year description — only when birthday transitions the year mid-period */}
+      {report.nextPersonalYear && report.nextYearDescription && (
+        <div className="bg-[#fff0d6] rounded-2xl p-4 print:p-4 border-2 border-[#d4a843]/60 mb-4 shadow-sm print:shadow-none">
+          <p className="text-[#7c4a00] text-sm font-bold mb-2">
+            🎂 שנה אישית {report.nextPersonalYear} — האנרגיה שנכנסת מיום הולדתך:
+          </p>
+          <p className="text-[#4a3728] leading-relaxed text-sm print:text-sm">{report.nextYearDescription}</p>
+        </div>
+      )}
 
       {/* 3 months overview */}
       <p className="text-[#4a3728] text-sm font-bold mb-2 text-center">מה צפוי לך ב-3 החודשים הבאים:</p>
@@ -136,17 +148,32 @@ function MonthPage({ month, idx, gender }: { month: ReportData["months"][0]; idx
         </div>
       </div>
 
-      {/* ── Birthday transition banner ── */}
-      {month.isBirthdayMonth && month.nextPersonalYear && month.nextPersonalYear !== month.personalYear && (
-        <div className="bg-[#fff0d6] border-2 border-[#d4a843]/70 rounded-xl px-3 py-2.5 mb-4 flex items-center gap-2.5 shadow-sm print:shadow-none">
-          <span className="text-2xl flex-shrink-0">🎂</span>
-          <div>
-            <p className="text-[#7c4a00] font-bold text-xs leading-tight">
-              יום הולדתך ב-{month.birthDay} ב{month.monthName}!
+      {/* ── Birthday split: two personal months ── */}
+      {month.isBirthdayMonth && month.nextPersonalMonth && (
+        <div className="bg-[#fff0d6] border-2 border-[#d4a843]/70 rounded-xl px-3 py-3 mb-4 shadow-sm print:shadow-none">
+          <div className="flex items-center gap-2 mb-2.5">
+            <span className="text-xl flex-shrink-0">🎂</span>
+            <p className="text-[#7c4a00] font-bold text-xs">
+              יום הולדתך ב-{month.birthDay}! {month.monthName} מתפצל לשתי אנרגיות:
             </p>
-            <p className="text-[#7c4a00] text-xs mt-0.5">
-              החודש הזה אתה/את עובר/ת משנה אישית <strong>{month.personalYear}</strong> לשנה אישית <strong>{month.nextPersonalYear}</strong> — אנרגיה חדשה נכנסת לחייך.
-            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            {/* Before birthday */}
+            <div className="bg-white/70 rounded-lg p-2.5 border border-[#c9a98a]/50">
+              <p className="text-[#8B6348] text-xs font-bold mb-1">
+                1–{month.birthDay! - 1} ב{month.monthName} | שנה {month.personalYear} → חודש {month.personalMonth}
+              </p>
+              <p className="text-[#4a3728] text-xs font-semibold">{month.centralEnergy}</p>
+              <p className="text-[#5a3e2b] text-xs mt-0.5 leading-relaxed">{month.energyDescription}</p>
+            </div>
+            {/* After birthday */}
+            <div className="bg-[#fffbe8] rounded-lg p-2.5 border-2 border-[#d4a843]/60">
+              <p className="text-[#7c4a00] text-xs font-bold mb-1">
+                {month.birthDay}–סוף {month.monthName} | שנה {month.nextPersonalYear} → חודש {month.nextPersonalMonth}
+              </p>
+              <p className="text-[#4a3728] text-xs font-semibold">{month.nextCentralEnergy}</p>
+              <p className="text-[#5a3e2b] text-xs mt-0.5 leading-relaxed">{month.nextEnergyDescription}</p>
+            </div>
           </div>
         </div>
       )}

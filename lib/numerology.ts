@@ -64,12 +64,14 @@ export interface MonthInfo {
   monthName: string;
   personalYear: number;
   personalMonth: number;
-  /** True if the person's birthday falls in this calendar month */
+  /** True if the person's birthday falls in this calendar month AND the personal year changes */
   isBirthdayMonth: boolean;
   /** The birth day (only set when isBirthdayMonth = true) */
   birthDay?: number;
-  /** Personal year AFTER the birthday (only set when isBirthdayMonth = true) */
+  /** Personal year AFTER the birthday (only set when isBirthdayMonth = true, and differs from personalYear) */
   nextPersonalYear?: number;
+  /** Personal month AFTER the birthday, based on nextPersonalYear */
+  nextPersonalMonth?: number;
 }
 
 /** Returns info for the next 3 calendar months from today, with per-month personal year */
@@ -85,9 +87,15 @@ export function getNext3Months(birthDay: number, birthMonth: number): MonthInfo[
     const isBirthdayMonth = cm === birthMonth;
 
     let nextPersonalYear: number | undefined;
+    let nextPersonalMonth: number | undefined;
     if (isBirthdayMonth) {
-      // Personal year from the birthday onward (day after birthday = +1)
-      nextPersonalYear = calcPersonalYearAt(birthDay, birthMonth, cy, cm, birthDay + 1);
+      // Personal year from the birthday onward (day after birthday)
+      const pyAfter = calcPersonalYearAt(birthDay, birthMonth, cy, cm, birthDay + 1);
+      if (pyAfter !== py) {
+        // Year actually changes — flag the transition
+        nextPersonalYear = pyAfter;
+        nextPersonalMonth = calcPersonalMonth(pyAfter, cm);
+      }
     }
 
     return {
@@ -96,9 +104,10 @@ export function getNext3Months(birthDay: number, birthMonth: number): MonthInfo[
       monthName: MONTHS_HE[cm - 1],
       personalYear: py,
       personalMonth: calcPersonalMonth(py, cm),
-      isBirthdayMonth,
+      isBirthdayMonth: isBirthdayMonth && nextPersonalYear !== undefined,
       birthDay: isBirthdayMonth ? birthDay : undefined,
       nextPersonalYear,
+      nextPersonalMonth,
     };
   });
 }

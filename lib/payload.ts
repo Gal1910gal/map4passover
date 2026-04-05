@@ -9,6 +9,10 @@ export interface ReportData {
   personalYear: number;
   yearTag: string;
   yearDescription: string;
+  /** Populated only when a birthday in the 3-month period changes the personal year */
+  nextPersonalYear?: number;
+  nextYearTag?: string;
+  nextYearDescription?: string;
   months: Array<{
     monthName: string;
     calendarMonth: number;
@@ -29,6 +33,12 @@ export interface ReportData {
     isBirthdayMonth: boolean;
     birthDay?: number;
     nextPersonalYear?: number;
+    /** Personal month number for the second half (after birthday) */
+    nextPersonalMonth?: number;
+    /** Energy name for the second half of the birthday month */
+    nextCentralEnergy?: string;
+    /** Energy description for the second half of the birthday month */
+    nextEnergyDescription?: string;
   }>;
   personalMessage: string;
 }
@@ -48,8 +58,18 @@ export function buildReport(
 
   const g = (text: string) => genderize(text, gender);
 
+  // Check if any month has a year transition
+  const transition = months.find(m => m.isBirthdayMonth && m.nextPersonalYear);
+  const nextYearContent = transition ? CONTENT[transition.nextPersonalYear!]?.year : undefined;
+
   const reportMonths = months.map(m => {
     const c = CONTENT[m.personalMonth] ?? CONTENT[1];
+
+    // For the birthday month: also build content for the new personal month
+    const cNext = (m.isBirthdayMonth && m.nextPersonalMonth)
+      ? (CONTENT[m.nextPersonalMonth] ?? CONTENT[1])
+      : null;
+
     return {
       monthName: m.monthName,
       calendarMonth: m.calendarMonth,
@@ -70,6 +90,9 @@ export function buildReport(
       isBirthdayMonth: m.isBirthdayMonth,
       birthDay: m.birthDay,
       nextPersonalYear: m.nextPersonalYear,
+      nextPersonalMonth: m.nextPersonalMonth,
+      nextCentralEnergy: cNext ? g(cNext.month.centralEnergy) : undefined,
+      nextEnergyDescription: cNext ? g(cNext.month.energyDescription) : undefined,
     };
   });
 
@@ -81,6 +104,9 @@ export function buildReport(
     personalYear,
     yearTag: g(yearContent?.tag ?? ""),
     yearDescription: g(yearContent?.description ?? ""),
+    nextPersonalYear: transition?.nextPersonalYear,
+    nextYearTag: nextYearContent ? g(nextYearContent.tag) : undefined,
+    nextYearDescription: nextYearContent ? g(nextYearContent.description) : undefined,
     months: reportMonths,
     personalMessage: g(buildPersonalMessage(firstName, personalYear, months[0]?.monthName ?? "", months[2]?.monthName ?? "")),
   };
