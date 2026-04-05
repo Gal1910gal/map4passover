@@ -4,7 +4,7 @@
  * Total: 5 pages (1 cover + 3 month + 1 closing).
  */
 import Image from "next/image";
-import { ReportData } from "@/lib/payload";
+import { ReportData, MonthHalfData } from "@/lib/payload";
 
 interface Props { report: ReportData }
 
@@ -132,6 +132,9 @@ function MonthPage({ month, idx, gender }: { month: ReportData["months"][0]; idx
           <div className="flex-1">
             <h2 className={`text-base font-bold ${c.accent} leading-tight`}>
               {month.monthName} | מספר {month.personalMonth}
+              {month.isBirthdayMonth && (
+                <span className="text-[#9e7860] font-normal text-xs mr-1"> — עד יום הולדתך ב-{month.birthDay}</span>
+              )}
             </h2>
             <p className="text-[#7c5c47] text-xs">כל חודש נושא אנרגיה ייחודית המגיעה מהמספר האישי שלו.</p>
           </div>
@@ -147,36 +150,6 @@ function MonthPage({ month, idx, gender }: { month: ReportData["months"][0]; idx
           </div>
         </div>
       </div>
-
-      {/* ── Birthday split: two personal months ── */}
-      {month.isBirthdayMonth && month.nextPersonalMonth && (
-        <div className="bg-[#fff0d6] border-2 border-[#d4a843]/70 rounded-xl px-3 py-3 mb-4 shadow-sm print:shadow-none">
-          <div className="flex items-center gap-2 mb-2.5">
-            <span className="text-xl flex-shrink-0">🎂</span>
-            <p className="text-[#7c4a00] font-bold text-xs">
-              יום הולדתך ב-{month.birthDay}! {month.monthName} מתפצל לשתי אנרגיות:
-            </p>
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            {/* Before birthday */}
-            <div className="bg-white/70 rounded-lg p-2.5 border border-[#c9a98a]/50">
-              <p className="text-[#8B6348] text-xs font-bold mb-1">
-                1–{month.birthDay! - 1} ב{month.monthName} | שנה {month.personalYear} → חודש {month.personalMonth}
-              </p>
-              <p className="text-[#4a3728] text-xs font-semibold">{month.centralEnergy}</p>
-              <p className="text-[#5a3e2b] text-xs mt-0.5 leading-relaxed">{month.energyDescription}</p>
-            </div>
-            {/* After birthday */}
-            <div className="bg-[#fffbe8] rounded-lg p-2.5 border-2 border-[#d4a843]/60">
-              <p className="text-[#7c4a00] text-xs font-bold mb-1">
-                {month.birthDay}–סוף {month.monthName} | שנה {month.nextPersonalYear} → חודש {month.nextPersonalMonth}
-              </p>
-              <p className="text-[#4a3728] text-xs font-semibold">{month.nextCentralEnergy}</p>
-              <p className="text-[#5a3e2b] text-xs mt-0.5 leading-relaxed">{month.nextEnergyDescription}</p>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* ── Year × Month interaction ── */}
       {month.yearMonthInteraction && (
@@ -262,6 +235,131 @@ function MonthPage({ month, idx, gender }: { month: ReportData["months"][0]; idx
   );
 }
 
+// ─── Second Half Page (post-birthday, new personal year) ─────
+function SecondHalfPage({
+  half, monthName, birthDay, idx, gender,
+}: {
+  half: MonthHalfData;
+  monthName: string;
+  birthDay: number;
+  idx: number;
+  gender: "female" | "male";
+}) {
+  const c = MONTH_COLORS[(idx + 1) % 3];
+  const challengeHow = gender === "female"
+    ? ["כשאת מזהה את הדפוס - את כבר לא בתוכו", "עצרי ושאלי: \"מה אני באמת צריכה עכשיו?\"", "זכרי: האתגר הוא זמני", "חזרי אל הפעולה המדויקת שלך"]
+    : ["כשאתה מזהה את הדפוס - אתה כבר לא בתוכו", "עצור ושאל: \"מה אני באמת צריך עכשיו?\"", "זכור: האתגר הוא זמני", "חזור אל הפעולה המדויקת שלך"];
+
+  return (
+    <Page className="page-break" tight>
+
+      {/* ── Header ── */}
+      <div className="bg-[#fff0d6] border-2 border-[#d4a843]/70 rounded-xl p-3 mb-4 shadow-sm print:shadow-none">
+        <div className="flex items-center gap-3">
+          <div className="bg-[#d4a843] text-white rounded-full w-10 h-10 flex items-center justify-center font-bold text-lg flex-shrink-0 shadow-md print:shadow-none">
+            {half.personalMonth}
+          </div>
+          <div className="flex-1">
+            <h2 className="text-base font-bold text-[#7c4a00] leading-tight">
+              🎂 {monthName} | מספר {half.personalMonth}
+              <span className="text-[#9e7860] font-normal text-xs mr-1"> — מיום הולדתך ב-{birthDay} | שנה אישית {half.personalYear}</span>
+            </h2>
+            <p className="text-[#7c5c47] text-xs">אנרגיה חדשה נכנסת מיום הולדתך — שנה אישית חדשה מתחילה.</p>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-2 mt-2">
+          <div className="bg-white/80 rounded-lg p-2 shadow-sm print:shadow-none">
+            <p className="text-[#9e7860] text-xs font-bold">🌟 אנרגיה מרכזית</p>
+            <p className="font-bold text-[#7c4a00] text-xs mt-0.5">{half.centralEnergy}</p>
+          </div>
+          <div className="bg-white/80 rounded-lg p-2 shadow-sm print:shadow-none">
+            <p className="text-[#9e7860] text-xs font-bold">⚠️ אתגר אפשרי</p>
+            <p className="font-bold text-[#4a3728] text-xs mt-0.5">{half.challenge}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Year × Month interaction ── */}
+      {half.yearMonthInteraction && (
+        <div className="bg-[#fdf6e3] border border-[#c9a98a]/70 rounded-xl px-3 py-2 mb-4 flex items-start gap-2 shadow-sm print:shadow-none">
+          <span className="text-[#8B6348] font-bold text-xs flex-shrink-0 mt-0.5">✦ השפעת השנה על החודש:</span>
+          <p className="text-[#4a3728] text-xs leading-relaxed">{half.yearMonthInteraction}</p>
+        </div>
+      )}
+
+      {/* ── Energy + Challenge ── */}
+      <div className="grid grid-cols-2 gap-3 mb-4">
+        <div className="bg-[#e8ddd2] rounded-xl p-3 border border-[#c9a98a]/50 shadow-sm print:shadow-none">
+          <SectionTag label="אנרגיה מרכזית" />
+          <p className="text-[#4a3728] text-xs leading-relaxed mt-1">{half.energyDescription}</p>
+        </div>
+        <div className="flex flex-col gap-3">
+          <div className="bg-[#fff8e7] rounded-xl p-3 border-2 border-amber-300/60 shadow-sm print:shadow-none flex-1">
+            <p className="text-amber-700 text-xs font-bold mb-1.5">לשים לב ל:</p>
+            <ul className="space-y-1">
+              {half.challengeItems.map((item, i) => (
+                <li key={i} className="text-[#4a3728] text-xs flex items-start gap-1">
+                  <span className="text-amber-500 font-bold flex-shrink-0">•</span>
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="bg-white/80 rounded-xl p-3 border-2 border-[#d4b896]/50 shadow-sm print:shadow-none flex-1">
+            <p className="text-[#7c5c47] text-xs font-bold mb-1.5">איך להתמודד:</p>
+            <ul className="space-y-1">
+              {challengeHow.map((line, i) => (
+                <li key={i} className="text-[#4a3728] text-xs font-medium">• {line}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      {/* ── What to do ── */}
+      <div className="mb-4">
+        <SectionTag label="מה כן לעשות" />
+        <div className="grid grid-cols-3 gap-3 mt-2">
+          {[0, 2, 4].map(i => (
+            <div key={i} className="bg-white/80 rounded-lg p-3 border-2 border-[#d4b896]/50 shadow-sm print:shadow-none">
+              <p className="text-[#4a3728] text-xs mb-1.5 flex items-start gap-1">
+                <span className="text-[#7c4a00] font-bold flex-shrink-0">←</span>
+                <span className="font-medium">{half.whatToDo[i]}</span>
+              </p>
+              <p className="text-[#4a3728] text-xs flex items-start gap-1">
+                <span className="text-[#7c4a00] font-bold flex-shrink-0">←</span>
+                <span className="font-medium">{half.whatToDo[i + 1]}</span>
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Precise action ── */}
+      <div>
+        <SectionTag label="פעולה מדויקת" />
+        <div className="bg-[#fff0d6] rounded-xl p-3 mb-2.5 border border-[#d4a843]/50 shadow-sm print:shadow-none mt-2">
+          <p className="text-[#7c4a00] text-xs font-bold mb-0.5">🎯 הפעולה שלי לחודש:</p>
+          <p className="text-[#4a3728] font-bold text-sm">{half.preciseAction}</p>
+        </div>
+        <div className="grid grid-cols-3 gap-3 mb-2.5">
+          {[
+            { label: "מתי?", val: half.when },
+            { label: "איך?", val: half.how },
+            { label: "עם מי?", val: half.withWhom },
+          ].map(({ label, val }) => (
+            <div key={label} className="bg-[#fff0d6] rounded-lg p-2 text-center border border-[#d4a843]/40 shadow-sm print:shadow-none">
+              <p className="text-[#7c4a00] text-xs font-bold mb-0.5">{label}</p>
+              <p className="text-[#4a3728] text-xs font-medium">{val}</p>
+            </div>
+          ))}
+        </div>
+        <p className="text-[#7c5c47] text-xs italic font-semibold">👉 אם עשיתי - {half.feeling}</p>
+      </div>
+    </Page>
+  );
+}
+
 // ─── Personal Message Page ───────────────────────────────────
 function MessagePage({ report }: { report: ReportData }) {
   return (
@@ -309,7 +407,19 @@ export default function ReportTemplate({ report }: Props) {
     <div className="bg-[#f5f0ea]" dir="rtl">
       <CoverPage report={report} />
       {report.months.map((m, i) => (
-        <MonthPage key={i} month={m} idx={i} gender={report.gender} />
+        <>
+          <MonthPage key={`month-${i}`} month={m} idx={i} gender={report.gender} />
+          {m.secondHalf && (
+            <SecondHalfPage
+              key={`half-${i}`}
+              half={m.secondHalf}
+              monthName={m.monthName}
+              birthDay={m.birthDay!}
+              idx={i}
+              gender={report.gender}
+            />
+          )}
+        </>
       ))}
       <MessagePage report={report} />
     </div>

@@ -1,6 +1,23 @@
 import { CONTENT, YEAR_MONTH_INTERACTION, buildPersonalMessage, genderize } from "@/data/content";
 import { MonthInfo } from "./numerology";
 
+/** Full content for one "month half" (used for both normal months and the second-half birthday page) */
+export interface MonthHalfData {
+  personalYear: number;
+  personalMonth: number;
+  centralEnergy: string;
+  energyDescription: string;
+  challenge: string;
+  challengeItems: [string, string];
+  whatToDo: [string, string, string, string, string, string];
+  preciseAction: string;
+  when: string;
+  how: string;
+  withWhom: string;
+  feeling: string;
+  yearMonthInteraction: string;
+}
+
 export interface ReportData {
   firstName: string;
   lastName: string;
@@ -32,15 +49,34 @@ export interface ReportData {
     yearMonthInteraction: string;
     isBirthdayMonth: boolean;
     birthDay?: number;
-    nextPersonalYear?: number;
-    /** Personal month number for the second half (after birthday) */
-    nextPersonalMonth?: number;
-    /** Energy name for the second half of the birthday month */
-    nextCentralEnergy?: string;
-    /** Energy description for the second half of the birthday month */
-    nextEnergyDescription?: string;
+    /** Full content for the post-birthday part of this month (new personal year) */
+    secondHalf?: MonthHalfData;
   }>;
   personalMessage: string;
+}
+
+function buildHalf(
+  personalYear: number,
+  personalMonth: number,
+  calendarMonth: number,
+  g: (s: string) => string
+): MonthHalfData {
+  const c = CONTENT[personalMonth] ?? CONTENT[1];
+  return {
+    personalYear,
+    personalMonth,
+    centralEnergy: g(c.month.centralEnergy),
+    energyDescription: g(c.month.energyDescription),
+    challenge: g(c.month.challenge),
+    challengeItems: [g(c.month.challengeItems[0]), g(c.month.challengeItems[1])] as [string, string],
+    whatToDo: c.month.whatToDo.map(g) as [string, string, string, string, string, string],
+    preciseAction: g(c.month.preciseAction),
+    when: g(c.month.when),
+    how: g(c.month.how),
+    withWhom: g(c.month.withWhom),
+    feeling: g(c.month.feeling),
+    yearMonthInteraction: g(YEAR_MONTH_INTERACTION[personalYear]?.[personalMonth] ?? ""),
+  };
 }
 
 export function buildReport(
@@ -65,10 +101,10 @@ export function buildReport(
   const reportMonths = months.map(m => {
     const c = CONTENT[m.personalMonth] ?? CONTENT[1];
 
-    // For the birthday month: also build content for the new personal month
-    const cNext = (m.isBirthdayMonth && m.nextPersonalMonth)
-      ? (CONTENT[m.nextPersonalMonth] ?? CONTENT[1])
-      : null;
+    // Build secondHalf when birthday changes the personal year this month
+    const secondHalf = (m.isBirthdayMonth && m.nextPersonalYear && m.nextPersonalMonth)
+      ? buildHalf(m.nextPersonalYear, m.nextPersonalMonth, m.calendarMonth, g)
+      : undefined;
 
     return {
       monthName: m.monthName,
@@ -89,10 +125,7 @@ export function buildReport(
       yearMonthInteraction: g(YEAR_MONTH_INTERACTION[m.personalYear]?.[m.personalMonth] ?? ""),
       isBirthdayMonth: m.isBirthdayMonth,
       birthDay: m.birthDay,
-      nextPersonalYear: m.nextPersonalYear,
-      nextPersonalMonth: m.nextPersonalMonth,
-      nextCentralEnergy: cNext ? g(cNext.month.centralEnergy) : undefined,
-      nextEnergyDescription: cNext ? g(cNext.month.energyDescription) : undefined,
+      secondHalf,
     };
   });
 
