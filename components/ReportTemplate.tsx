@@ -57,13 +57,26 @@ function CoverPage({ report }: { report: ReportData }) {
         {[
           { label: "שם", value: `${report.firstName} ${report.lastName}`.trim() },
           { label: "תאריך לידה", value: report.birthdate },
-          { label: "שנה אישית", value: String(report.personalYear) },
         ].map(({ label, value }) => (
           <div key={label} className="bg-[#e8ddd2] rounded-2xl p-3 text-center border-2 border-[#c9a98a]/60 shadow-sm print:shadow-none">
             <p className="text-[#8B6348] text-xs font-bold mb-1">{label}</p>
             <p className="text-[#4a3728] font-bold text-lg print:text-lg leading-tight">{value}</p>
           </div>
         ))}
+        {/* Personal year box — shows transition when birthday is mid-period */}
+        <div className={`rounded-2xl p-3 text-center border-2 shadow-sm print:shadow-none ${report.nextPersonalYear ? "bg-[#fff0d6] border-[#d4a843]/60" : "bg-[#e8ddd2] border-[#c9a98a]/60"}`}>
+          <p className={`text-xs font-bold mb-1 ${report.nextPersonalYear ? "text-[#7c4a00]" : "text-[#8B6348]"}`}>שנה אישית</p>
+          {report.nextPersonalYear ? (
+            <>
+              <p className="text-[#4a3728] font-bold text-lg leading-tight">
+                {report.personalYear} → {report.nextPersonalYear}
+              </p>
+              <p className="text-[#7c4a00] text-xs mt-0.5 font-medium">מתחלפת ביום הולדתך</p>
+            </>
+          ) : (
+            <p className="text-[#4a3728] font-bold text-lg print:text-lg leading-tight">{report.personalYear}</p>
+          )}
+        </div>
       </div>
 
       {/* What I see in you now */}
