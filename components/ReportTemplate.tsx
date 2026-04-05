@@ -84,24 +84,55 @@ function CoverPage({ report }: { report: ReportData }) {
         </div>
       )}
 
-      {/* 3 months overview */}
-      <p className="text-[#4a3728] text-sm font-bold mb-2 text-center">מה צפוי לך ב-3 החודשים הבאים:</p>
-      <div className="grid grid-cols-3 gap-2">
-        {report.months.map((m, i) => {
-          const dotColors = ["bg-[#8B6348]", "bg-[#4a7a4a]", "bg-[#4a4a7a]"];
-          const bgColors = ["bg-[#8B6348]/15 border-[#8B6348]/40", "bg-[#4a7a4a]/15 border-[#4a7a4a]/40", "bg-[#4a4a7a]/15 border-[#4a4a7a]/40"];
-          const textColors = ["text-[#8B6348]", "text-[#4a7a4a]", "text-[#4a4a7a]"];
-          return (
-            <div key={i} className={`rounded-2xl p-3 text-center border-2 shadow-sm print:shadow-none ${bgColors[i % 3]}`}>
-              <div className={`${dotColors[i % 3]} text-white rounded-full w-10 h-10 print:w-10 print:h-10 flex items-center justify-center font-bold text-lg mx-auto mb-2 shadow-md print:shadow-none`}>
-                {m.personalMonth}
-              </div>
-              <p className={`font-bold text-sm print:text-sm ${textColors[i % 3]}`}>{m.monthName}</p>
-              <p className="text-[#5a3e2b] text-xs print:text-xs font-medium mt-0.5">{m.centralEnergy}</p>
+      {/* months overview — expands when there's a birthday split */}
+      {(() => {
+        const dotColors = ["bg-[#8B6348]", "bg-[#4a7a4a]", "bg-[#4a4a7a]"];
+        const bgColors  = ["bg-[#8B6348]/15 border-[#8B6348]/40", "bg-[#4a7a4a]/15 border-[#4a7a4a]/40", "bg-[#4a4a7a]/15 border-[#4a4a7a]/40"];
+        const textColors = ["text-[#8B6348]", "text-[#4a7a4a]", "text-[#4a4a7a]"];
+
+        // Flatten months + secondHalf into one list of summary cards
+        const cards: { key: string; num: number; name: string; energy: string; gold?: boolean }[] = [];
+        report.months.forEach((m, i) => {
+          if (m.isBirthdayMonth && m.secondHalf) {
+            cards.push({ key: `${i}a`, num: m.personalMonth, name: `${m.monthName} (עד ${m.birthDay})`, energy: m.centralEnergy });
+            cards.push({ key: `${i}b`, num: m.secondHalf.personalMonth, name: `${m.monthName} (מ-${m.birthDay})`, energy: m.secondHalf.centralEnergy, gold: true });
+          } else {
+            cards.push({ key: `${i}`, num: m.personalMonth, name: m.monthName, energy: m.centralEnergy });
+          }
+        });
+
+        const cols = cards.length === 4 ? "grid-cols-4" : "grid-cols-3";
+        const hasExtra = cards.length === 4;
+
+        return (
+          <>
+            <p className="text-[#4a3728] text-sm font-bold mb-2 text-center">
+              {hasExtra ? "מה צפוי לך בתקופה הקרובה:" : "מה צפוי לך ב-3 החודשים הבאים:"}
+            </p>
+            <div className={`grid ${cols} gap-2`}>
+              {cards.map((card, ci) => (
+                card.gold ? (
+                  <div key={card.key} className="rounded-2xl p-3 text-center border-2 bg-[#fff0d6] border-[#d4a843]/60 shadow-sm print:shadow-none">
+                    <div className="bg-[#d4a843] text-white rounded-full w-10 h-10 print:w-10 print:h-10 flex items-center justify-center font-bold text-lg mx-auto mb-2 shadow-md print:shadow-none">
+                      {card.num}
+                    </div>
+                    <p className="font-bold text-xs print:text-xs text-[#7c4a00]">{card.name}</p>
+                    <p className="text-[#5a3e2b] text-xs print:text-xs font-medium mt-0.5">{card.energy}</p>
+                  </div>
+                ) : (
+                  <div key={card.key} className={`rounded-2xl p-3 text-center border-2 shadow-sm print:shadow-none ${bgColors[ci % 3]}`}>
+                    <div className={`${dotColors[ci % 3]} text-white rounded-full w-10 h-10 print:w-10 print:h-10 flex items-center justify-center font-bold text-lg mx-auto mb-2 shadow-md print:shadow-none`}>
+                      {card.num}
+                    </div>
+                    <p className={`font-bold text-xs print:text-xs ${textColors[ci % 3]}`}>{card.name}</p>
+                    <p className="text-[#5a3e2b] text-xs print:text-xs font-medium mt-0.5">{card.energy}</p>
+                  </div>
+                )
+              ))}
             </div>
-          );
-        })}
-      </div>
+          </>
+        );
+      })()}
     </Page>
   );
 }
