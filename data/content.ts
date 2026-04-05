@@ -692,14 +692,22 @@ export function buildPersonalMessage(
   firstName: string,
   personalYear: number,
   month1Name: string,
-  month3Name: string
+  month3Name: string,
+  nextPersonalYear?: number
 ): string {
   const yearContent = CONTENT[personalYear]?.year;
   if (!yearContent) return "";
 
+  const nextYearContent = nextPersonalYear ? CONTENT[nextPersonalYear]?.year : undefined;
+
+  // Opening sentence — different when year changes mid-period
+  const opening = nextPersonalYear && nextYearContent
+    ? `${firstName} היקרה, התקופה מ${month1Name} ועד ${month3Name} היא מעבר משמעותי: היא מתחילה בשנת ה-${personalYear} (${yearContent.tag}) ומגיעה עד יום הולדתך — ומשם נכנסת שנת ה-${nextPersonalYear} (${nextYearContent.tag}). `
+    : `${firstName} היקרה, שלושת החודשים מ${month1Name} ועד ${month3Name} הם פרק משמעותי בשנת ה-${personalYear} שלך - ${yearContent.tag}. `;
+
   // Written in female form; genderize() converts to male if needed
   return (
-    `${firstName} היקרה, שלושת החודשים מ${month1Name} ועד ${month3Name} הם פרק משמעותי בשנת ה-${personalYear} שלך - ${yearContent.tag}. ` +
+    opening +
     `הם לא מבקשים ממך לדעת הכל מראש, אלא לפעול נכון בתוך מה שיש - עם הכיוון שמספר החודש מראה לך. ` +
     `הקשיבי לאנרגיה של כל חודש, עבדי איתה ולא נגדה - וראי כיצד הדברים נעים ביתר קלות, ביתר חן, ביתר שלמות.`
   );

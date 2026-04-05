@@ -141,7 +141,7 @@ export function buildReport(
     nextYearTag: nextYearContent ? g(nextYearContent.tag) : undefined,
     nextYearDescription: nextYearContent ? g(nextYearContent.description) : undefined,
     months: reportMonths,
-    personalMessage: g(buildPersonalMessage(firstName, personalYear, months[0]?.monthName ?? "", months[2]?.monthName ?? "")),
+    personalMessage: g(buildPersonalMessage(firstName, personalYear, months[0]?.monthName ?? "", months[2]?.monthName ?? "", transition?.nextPersonalYear)),
   };
 }
 
