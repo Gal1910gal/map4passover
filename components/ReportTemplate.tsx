@@ -136,6 +136,21 @@ function MonthPage({ month, idx, gender }: { month: ReportData["months"][0]; idx
         </div>
       </div>
 
+      {/* ── Birthday transition banner ── */}
+      {month.isBirthdayMonth && month.nextPersonalYear && month.nextPersonalYear !== month.personalYear && (
+        <div className="bg-[#fff0d6] border-2 border-[#d4a843]/70 rounded-xl px-3 py-2.5 mb-4 flex items-center gap-2.5 shadow-sm print:shadow-none">
+          <span className="text-2xl flex-shrink-0">🎂</span>
+          <div>
+            <p className="text-[#7c4a00] font-bold text-xs leading-tight">
+              יום הולדתך ב-{month.birthDay} ב{month.monthName}!
+            </p>
+            <p className="text-[#7c4a00] text-xs mt-0.5">
+              החודש הזה אתה/את עובר/ת משנה אישית <strong>{month.personalYear}</strong> לשנה אישית <strong>{month.nextPersonalYear}</strong> — אנרגיה חדשה נכנסת לחייך.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* ── Year × Month interaction ── */}
       {month.yearMonthInteraction && (
         <div className="bg-[#fdf6e3] border border-[#c9a98a]/70 rounded-xl px-3 py-2 mb-4 flex items-start gap-2 shadow-sm print:shadow-none">

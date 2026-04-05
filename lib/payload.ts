@@ -13,6 +13,7 @@ export interface ReportData {
     monthName: string;
     calendarMonth: number;
     calendarYear: number;
+    personalYear: number;
     personalMonth: number;
     centralEnergy: string;
     energyDescription: string;
@@ -25,6 +26,9 @@ export interface ReportData {
     withWhom: string;
     feeling: string;
     yearMonthInteraction: string;
+    isBirthdayMonth: boolean;
+    birthDay?: number;
+    nextPersonalYear?: number;
   }>;
   personalMessage: string;
 }
@@ -50,6 +54,7 @@ export function buildReport(
       monthName: m.monthName,
       calendarMonth: m.calendarMonth,
       calendarYear: m.calendarYear,
+      personalYear: m.personalYear,
       personalMonth: m.personalMonth,
       centralEnergy: g(c.month.centralEnergy),
       energyDescription: g(c.month.energyDescription),
@@ -61,7 +66,10 @@ export function buildReport(
       how: g(c.month.how),
       withWhom: g(c.month.withWhom),
       feeling: g(c.month.feeling),
-      yearMonthInteraction: g(YEAR_MONTH_INTERACTION[personalYear]?.[m.personalMonth] ?? ""),
+      yearMonthInteraction: g(YEAR_MONTH_INTERACTION[m.personalYear]?.[m.personalMonth] ?? ""),
+      isBirthdayMonth: m.isBirthdayMonth,
+      birthDay: m.birthDay,
+      nextPersonalYear: m.nextPersonalYear,
     };
   });
 

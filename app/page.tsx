@@ -58,7 +58,7 @@ export default function Home() {
     if (!y || y < 1900 || y > 2020) { setError("שנה לא תקינה"); return; }
 
     const personalYear = calcPersonalYear(d, m);
-    const months       = getNext3Months(personalYear);
+    const months       = getNext3Months(d, m);
     const report       = buildReport(firstName.trim(), lastName.trim(), d, m, y, gender, personalYear, months);
 
     // Persist to localStorage

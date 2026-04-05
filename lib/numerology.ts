@@ -24,17 +24,30 @@ function reduce19(n: number): number {
  *   Before birthday this year → add currentYear to day+month
  *   After birthday this year  → add (currentYear + 1)
  */
+
+/** Calculate personal year as of today (used for cover page + client bank) */
 export function calcPersonalYear(birthDay: number, birthMonth: number): number {
   const today = new Date();
-  const currentYear = today.getFullYear();
-  const birthdayThisYear = new Date(currentYear, birthMonth - 1, birthDay);
-  const birthdayPassed = today >= birthdayThisYear;
+  return calcPersonalYearAt(birthDay, birthMonth, today.getFullYear(), today.getMonth() + 1, today.getDate());
+}
+
+/** Calculate personal year as of the 1st day of a given calendar month */
+function calcPersonalYearAt(
+  birthDay: number,
+  birthMonth: number,
+  refYear: number,
+  refMonth: number,
+  refDay = 1
+): number {
+  const birthdayThisYear = new Date(refYear, birthMonth - 1, birthDay);
+  const refDate = new Date(refYear, refMonth - 1, refDay);
+  const birthdayPassed = refDate >= birthdayThisYear;
 
   let yearToUse: number;
   if (birthMonth <= 6) {
-    yearToUse = birthdayPassed ? currentYear : currentYear - 1;
+    yearToUse = birthdayPassed ? refYear : refYear - 1;
   } else {
-    yearToUse = birthdayPassed ? currentYear + 1 : currentYear;
+    yearToUse = birthdayPassed ? refYear + 1 : refYear;
   }
 
   return reduce19(digitSum(birthDay) + digitSum(birthMonth) + digitSum(yearToUse));
@@ -49,20 +62,43 @@ export interface MonthInfo {
   calendarMonth: number;  // 1-12
   calendarYear: number;
   monthName: string;
+  personalYear: number;
   personalMonth: number;
+  /** True if the person's birthday falls in this calendar month */
+  isBirthdayMonth: boolean;
+  /** The birth day (only set when isBirthdayMonth = true) */
+  birthDay?: number;
+  /** Personal year AFTER the birthday (only set when isBirthdayMonth = true) */
+  nextPersonalYear?: number;
 }
 
-/** Returns info for the next 3 calendar months from today */
-export function getNext3Months(personalYear: number): MonthInfo[] {
+/** Returns info for the next 3 calendar months from today, with per-month personal year */
+export function getNext3Months(birthDay: number, birthMonth: number): MonthInfo[] {
   const now = new Date();
   return Array.from({ length: 3 }, (_, i) => {
     const d = new Date(now.getFullYear(), now.getMonth() + i + 1, 1);
     const cm = d.getMonth() + 1;
+    const cy = d.getFullYear();
+
+    // Personal year as of the 1st of this month
+    const py = calcPersonalYearAt(birthDay, birthMonth, cy, cm, 1);
+    const isBirthdayMonth = cm === birthMonth;
+
+    let nextPersonalYear: number | undefined;
+    if (isBirthdayMonth) {
+      // Personal year from the birthday onward (day after birthday = +1)
+      nextPersonalYear = calcPersonalYearAt(birthDay, birthMonth, cy, cm, birthDay + 1);
+    }
+
     return {
       calendarMonth: cm,
-      calendarYear: d.getFullYear(),
+      calendarYear: cy,
       monthName: MONTHS_HE[cm - 1],
-      personalMonth: calcPersonalMonth(personalYear, cm),
+      personalYear: py,
+      personalMonth: calcPersonalMonth(py, cm),
+      isBirthdayMonth,
+      birthDay: isBirthdayMonth ? birthDay : undefined,
+      nextPersonalYear,
     };
   });
 }
