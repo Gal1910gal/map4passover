@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { calcPersonalYear, getNext3Months } from "@/lib/numerology";
+import { getNext3Months } from "@/lib/numerology";
 import { buildReport } from "@/lib/payload";
 import { getClients, saveClient, deleteClient, getLastInput, saveLastInput, SavedClient } from "@/lib/clientStorage";
 
@@ -57,8 +57,8 @@ export default function Home() {
     if (!m || m < 1 || m > 12)      { setError("חודש לא תקין"); return; }
     if (!y || y < 1900 || y > 2020) { setError("שנה לא תקינה"); return; }
 
-    const personalYear = calcPersonalYear(d, m);
     const months       = getNext3Months(d, m);
+    const personalYear = months[0].personalYear;   // use the year active in the first report month, not today
     const report       = buildReport(firstName.trim(), lastName.trim(), d, m, y, gender, personalYear, months);
 
     // Persist to localStorage
